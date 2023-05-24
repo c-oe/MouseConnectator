@@ -38,16 +38,23 @@ public class Window extends JFrame {
     JPanel mainPanel = new JPanel();//布局
     JLabel infoLabel1 = new JLabel("不设置时间，每天 00:00:00 执行");//提示1
     JLabel infoLabel2 = new JLabel("点击开始时在设定时间内将鼠标移至点击位置");//提示2
-    JLabel infoLabel3 = new JLabel("点击立即开始时在3秒内移动鼠标至点击位置");//提示3
+    JLabel infoLabel3 = new JLabel("点击立即开始时在 1 秒内移动鼠标至点击位置");//提示3
     JLabel dateLabel = new JLabel("定时时间：");
     JFormattedTextField dateTextField = new JFormattedTextField(exampleTime);//定时时间输入框
     JLabel numLabel = new JLabel("*连点次数：");
     JFormattedTextField numTextField = new JFormattedTextField("100");//次数输入框
+    JButton nowButton = new JButton("当前时间");
     JButton startButton = new JButton("开始");
     JButton startNowButton = new JButton("立即开始");
 
     public Window() {
-        //窗体名称
+        //窗口风格
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        //窗口名称
         setTitle("鼠标连点器");
         //设置窗口是否可视
         setVisible(true);
@@ -140,6 +147,13 @@ public class Window extends JFrame {
             }
         });
         mainPanel.add(numTextField);
+
+        nowButton.setBounds(360,130,90,20);
+        nowButton.addActionListener(e -> {
+            dateTextField.setText(sdf.format(new Date()));
+            dateTextField.setForeground(Color.BLACK);
+        });
+        mainPanel.add(nowButton);
 
         startButton.setBounds(120,240,75,50);
         startButton.addActionListener(e -> {
@@ -234,7 +248,7 @@ public class Window extends JFrame {
         //立即执行
         if (now) {
             //创建定时任务
-            timer.schedule(task, 3000);//等待3秒执行
+            timer.schedule(task, 1000);//等待1秒执行
         } else {
             //不指定时间
             if ("".equals(time)) {
