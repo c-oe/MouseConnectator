@@ -27,7 +27,7 @@ public class Window extends JFrame {
     private final static Pattern numPattern = Pattern.compile("-?[0-9]+(\\\\.[0-9]+)?");
     private final static Pattern timePattern = Pattern.compile("^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|1[0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))\\s+([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$");
 
-    private int num = 0;
+    private String num = "";
 
     private String time = "";
 
@@ -99,7 +99,6 @@ public class Window extends JFrame {
                     dateTextField.setForeground(Color.BLACK);           //设置用户输入的字体颜色为黑色
                 }
             }
-
             @Override
             public void focusLost(FocusEvent e) {
                 String text = dateTextField.getText();
@@ -107,12 +106,7 @@ public class Window extends JFrame {
                     dateTextField.setForeground(Color.LIGHT_GRAY);      //将提示文字设置为灰色
                     dateTextField.setText(exampleTime);                 //显示提示文字
                 }else {
-                    if (!exampleTime.equals(text) && timePattern.matcher(text).matches()) {
-                        time = text;
-                        System.out.println("时间格式正确");
-                    }else {
-                        JOptionPane.showMessageDialog(null, "时间格式不正确！", "错误", JOptionPane.ERROR_MESSAGE);
-                    }
+                    time = text;
                 }
             }
         });
@@ -134,68 +128,77 @@ public class Window extends JFrame {
                     numTextField.setForeground(Color.BLACK);           //设置用户输入的字体颜色为黑色
                 }
             }
-
             @Override
             public void focusLost(FocusEvent e) {
-                if ("".equals(numTextField.getText())){
+                String text = numTextField.getText();
+                if ("".equals(text)){
                     numTextField.setForeground(Color.LIGHT_GRAY);      //将提示文字设置为灰色
                     numTextField.setText("100");                       //显示提示文字
+                }else {
+                    num = text;
                 }
             }
-        });
-        numTextField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                Document document = e.getDocument();
-                try {
-                    if (numPattern.matcher(document.getText(0,document.getLength())).matches()){
-                        num = Integer.parseInt(document.getText(0,document.getLength()));
-                    }
-                } catch (BadLocationException ex) {
-                    JOptionPane.showMessageDialog(null, "程序执行错误！", "错误", JOptionPane.ERROR_MESSAGE);
-                    throw new RuntimeException(ex);
-                }
-            }
-            @Override
-            public void removeUpdate(DocumentEvent e) {}
-            @Override
-            public void changedUpdate(DocumentEvent e) {}
         });
         mainPanel.add(numTextField);
 
         startButton.setBounds(120,240,75,50);
         startButton.addActionListener(e -> {
-            if (num <= 0){
-                JOptionPane.showMessageDialog(null, "点击次数必填！", "错误", JOptionPane.ERROR_MESSAGE);
-            }else {
-                if (!"".equals(time)){
-                    Date date;
-                    try {
-                        date = sdf.parse(time);
-                    } catch (ParseException ex) {
-                        JOptionPane.showMessageDialog(null, "程序执行错误！", "错误", JOptionPane.ERROR_MESSAGE);
-                        throw new RuntimeException(ex);
-                    }
-                    if (date.after(new Date())){
-                        startButton.setEnabled(false);
-                        startNowButton.setEnabled(false);
-                        timeTask(time,num,false);
-                    }else {
-                        JOptionPane.showMessageDialog(null, "执行时间不能在当前时间之前！", "错误", JOptionPane.ERROR_MESSAGE);
+            if (numPattern.matcher(num).matches()) {
+                int realNum = Integer.parseInt(num);
+                if (realNum <= 0){
+                    JOptionPane.showMessageDialog(null, "点击次数必填！", "错误", JOptionPane.ERROR_MESSAGE);
+                }else {
+                    if (!"".equals(time) && !exampleTime.equals(time) && timePattern.matcher(time).matches()) {
+                        Date date;
+                        try {
+                            date = sdf.parse(time);
+                        } catch (ParseException ex) {
+                            JOptionPane.showMessageDialog(null, "程序执行错误！", "错误", JOptionPane.ERROR_MESSAGE);
+                            throw new RuntimeException(ex);
+                        }
+                        if (date.after(new Date())) {
+                            startButton.setEnabled(false);
+                            startNowButton.setEnabled(false);
+                            timeTask(time, realNum, false);
+
+                            //重置
+                            dateTextField.setForeground(Color.LIGHT_GRAY);
+                            dateTextField.setText(exampleTime);
+                            numTextField.setForeground(Color.LIGHT_GRAY);
+                            numTextField.setText("100");
+                            this.time = "";
+                            this.num = "";
+                        } else {
+                            JOptionPane.showMessageDialog(null, "执行时间不能在当前时间之前！", "错误", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "时间格式不正确！", "错误", JOptionPane.ERROR_MESSAGE);
                     }
                 }
+            }else {
+                JOptionPane.showMessageDialog(null, "次数必须为数字！", "错误", JOptionPane.ERROR_MESSAGE);
             }
         });
         mainPanel.add(startButton);
 
         startNowButton.setBounds(240,240,150,50);
         startNowButton.addActionListener(e -> {
-            if (num <= 0){
-                JOptionPane.showMessageDialog(null, "点击次数必填！", "错误", JOptionPane.ERROR_MESSAGE);
+            if (numPattern.matcher(num).matches()) {
+                int realNum = Integer.parseInt(num);
+                if (realNum <= 0){
+                    JOptionPane.showMessageDialog(null, "点击次数必填！", "错误", JOptionPane.ERROR_MESSAGE);
+                }else {
+                    startButton.setEnabled(false);
+                    startNowButton.setEnabled(false);
+                    timeTask(time, realNum,true);
+
+                    //重置
+                    numTextField.setForeground(Color.LIGHT_GRAY);
+                    numTextField.setText("100");
+                    this.num = "";
+                }
             }else {
-                startButton.setEnabled(false);
-                startNowButton.setEnabled(false);
-                timeTask(time,num,true);
+                JOptionPane.showMessageDialog(null, "次数必须为数字！", "错误", JOptionPane.ERROR_MESSAGE);
             }
         });
         mainPanel.add(startNowButton);
