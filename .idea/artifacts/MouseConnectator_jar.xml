@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="MouseConnectator:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/MouseConnectator_jar</output-path>
+    <root id="archive" name="MouseConnectator.jar">
+      <element id="module-output" name="MouseConnectator" />
+    </root>
+  </artifact>
+</component>
