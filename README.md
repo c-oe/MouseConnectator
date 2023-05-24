@@ -5,7 +5,7 @@
 
 #### 安装教程
 
-1.  下载 MouseConnectator.zip 
+1.  下载 鼠标点击工具.zip 
 2.  解压压缩包
 3.  双击其中exe文件即可运行
 
