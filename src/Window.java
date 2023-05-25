@@ -46,6 +46,7 @@ public class Window extends JFrame {
     JButton nowButton = new JButton("当前时间");
     JButton startButton = new JButton("开始");
     JButton startNowButton = new JButton("立即开始");
+    JLabel infoLabel4 = new JLabel("",JLabel.CENTER);//提示4
 
     public Window() {
         //窗口风格
@@ -61,7 +62,7 @@ public class Window extends JFrame {
         //设置窗口的大小是否可以调节
         setResizable(false);
         //设置窗口大小和x,y位置
-        setSize(500, 350);
+        setSize(500, 400);
         //设置窗口退出则程序退出
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //窗口在屏幕中央显示
@@ -150,7 +151,9 @@ public class Window extends JFrame {
 
         nowButton.setBounds(360,130,90,20);
         nowButton.addActionListener(e -> {
-            dateTextField.setText(sdf.format(new Date()));
+            String nowTime = sdf.format(new Date());
+            time = nowTime;
+            dateTextField.setText(nowTime);
             dateTextField.setForeground(Color.BLACK);
         });
         mainPanel.add(nowButton);
@@ -162,7 +165,7 @@ public class Window extends JFrame {
                 if (realNum <= 0){
                     JOptionPane.showMessageDialog(null, "点击次数必填！", "错误", JOptionPane.ERROR_MESSAGE);
                 }else {
-                    if (!"".equals(time) && !exampleTime.equals(time) && timePattern.matcher(time).matches()) {
+                    if (!exampleTime.equals(time) && timePattern.matcher(time).matches()) {
                         Date date;
                         try {
                             date = sdf.parse(time);
@@ -171,20 +174,22 @@ public class Window extends JFrame {
                             throw new RuntimeException(ex);
                         }
                         if (date.after(new Date())) {
-                            startButton.setEnabled(false);
-                            startNowButton.setEnabled(false);
                             timeTask(time, realNum, false);
-
-                            //重置
-                            dateTextField.setForeground(Color.LIGHT_GRAY);
-                            dateTextField.setText(exampleTime);
-                            numTextField.setForeground(Color.LIGHT_GRAY);
-                            numTextField.setText("100");
-                            this.time = "";
-                            this.num = "";
+                            disabled(false);
                         } else {
                             JOptionPane.showMessageDialog(null, "执行时间不能在当前时间之前！", "错误", JOptionPane.ERROR_MESSAGE);
                         }
+                    } else if ("".equals(time)) {//不指定时间
+                        //获取明天的日期
+                        LocalDate date = LocalDate.now().minusDays(-1);
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                        String format = date.format(formatter);
+
+                        //拼接执行时间
+                        time = format + " 00:00:00";
+
+                        timeTask(time, realNum, false);
+                        disabled(false);
                     } else {
                         JOptionPane.showMessageDialog(null, "时间格式不正确！", "错误", JOptionPane.ERROR_MESSAGE);
                     }
@@ -202,20 +207,47 @@ public class Window extends JFrame {
                 if (realNum <= 0){
                     JOptionPane.showMessageDialog(null, "点击次数必填！", "错误", JOptionPane.ERROR_MESSAGE);
                 }else {
-                    startButton.setEnabled(false);
-                    startNowButton.setEnabled(false);
                     timeTask(time, realNum,true);
-
-                    //重置
-                    numTextField.setForeground(Color.LIGHT_GRAY);
-                    numTextField.setText("100");
-                    this.num = "";
+                    disabled(true);
                 }
             }else {
                 JOptionPane.showMessageDialog(null, "次数必须为数字！", "错误", JOptionPane.ERROR_MESSAGE);
             }
         });
         mainPanel.add(startNowButton);
+
+        infoLabel4.setFont(new Font("PingFang SC", Font.BOLD, 16));
+        infoLabel4.setForeground(Color.BLACK);
+        infoLabel4.setBounds(0, 300, 500, 38);
+        infoLabel4.setOpaque(false);
+        mainPanel.add(infoLabel4);
+    }
+
+    /**
+     * 按钮与输入框控制
+     * @param now 是否立即执行
+     */
+    public void disabled(boolean now){
+        if (now){
+            //按钮不可用
+            startButton.setEnabled(false);
+            startNowButton.setEnabled(false);
+            //重置
+            numTextField.setForeground(Color.LIGHT_GRAY);
+            numTextField.setText("100");
+            this.num = "";
+        }else {
+            //按钮不可用
+            startButton.setEnabled(false);
+            startNowButton.setEnabled(false);
+            //重置
+            dateTextField.setForeground(Color.LIGHT_GRAY);
+            dateTextField.setText(exampleTime);
+            numTextField.setForeground(Color.LIGHT_GRAY);
+            numTextField.setText("100");
+            this.time = "";
+            this.num = "";
+        }
     }
 
     /**
@@ -238,6 +270,7 @@ public class Window extends JFrame {
                             startNowButton.setEnabled(true);
                         }
                     },0);
+                    infoLabel4.setText("");
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "程序执行错误！", "错误", JOptionPane.ERROR_MESSAGE);
                     throw new RuntimeException(e);
@@ -249,18 +282,8 @@ public class Window extends JFrame {
         if (now) {
             //创建定时任务
             timer.schedule(task, 1000);//等待1秒执行
+            infoLabel4.setText("立即执行" + num + "次");
         } else {
-            //不指定时间
-            if ("".equals(time)) {
-                //获取明天的日期
-                LocalDate date = LocalDate.now().minusDays(-1);
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                String format = date.format(formatter);
-
-                //拼接执行时间
-                time = format + " 00:00:00";
-            }
-
             Date startDateTime;
             try {
                 startDateTime = sdf.parse(time);
@@ -268,8 +291,8 @@ public class Window extends JFrame {
                 JOptionPane.showMessageDialog(null, "程序执行错误！", "错误", JOptionPane.ERROR_MESSAGE);
                 throw new RuntimeException(e);
             }
-
             timer.schedule(task, startDateTime);
+            infoLabel4.setText("在 " + time + " 执行" + num + "次");
         }
     }
 
