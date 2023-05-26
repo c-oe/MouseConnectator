@@ -307,7 +307,7 @@ public class Window extends JFrame {
             System.out.println("点击剩余" + num + "次");
             robot.mousePress(MouseEvent.BUTTON1_DOWN_MASK);
             robot.mouseRelease(MouseEvent.BUTTON1_DOWN_MASK);
-            Thread.sleep(1);
+            Thread.sleep(34);//QQ飞车 30 帧为 33.34 毫秒
         }
     }
 }
