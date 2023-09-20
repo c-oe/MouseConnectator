@@ -31,7 +31,11 @@ public class Window extends JFrame {
 
     private String time = "";
 
+    private String millis = "1000";
+
     private final String exampleTime =  "2000-10-14 12:00:00";
+
+    private final long exampleMillis = 100;
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -43,6 +47,8 @@ public class Window extends JFrame {
     JFormattedTextField dateTextField = new JFormattedTextField(exampleTime);//定时时间输入框
     JLabel numLabel = new JLabel("*连点次数：");
     JFormattedTextField numTextField = new JFormattedTextField("100");//次数输入框
+    JLabel millisLabel = new JLabel("间隔时间：");
+    JFormattedTextField millisTextField = new JFormattedTextField(exampleMillis);//间隔时间输入框
     JButton nowButton = new JButton("当前时间");
     JButton startButton = new JButton("开始");
     JButton startNowButton = new JButton("立即开始");
@@ -62,7 +68,7 @@ public class Window extends JFrame {
         //设置窗口的大小是否可以调节
         setResizable(false);
         //设置窗口大小和x,y位置
-        setSize(500, 400);
+        setSize(500, 450);
         //设置窗口退出则程序退出
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //窗口在屏幕中央显示
@@ -149,6 +155,34 @@ public class Window extends JFrame {
         });
         mainPanel.add(numTextField);
 
+        millisLabel.setFont(new Font("PingFang SC", Font.BOLD, 16));
+        millisLabel.setBounds(100, 220, 91, 38);
+        millisLabel.setOpaque(false);
+        mainPanel.add(millisLabel);
+
+        millisTextField.setForeground(Color.LIGHT_GRAY);
+        millisTextField.setBounds(200, 225, 50, 33);
+        millisTextField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if ("100".equals(millisTextField.getText())){
+                    millisTextField.setText("");                          //将提示文字清空
+                    millisTextField.setForeground(Color.BLACK);           //设置用户输入的字体颜色为黑色
+                }
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                String text = millisTextField.getText();
+                if ("".equals(text)){
+                    millisTextField.setForeground(Color.LIGHT_GRAY);      //将提示文字设置为灰色
+                    millisTextField.setText("100");                       //显示提示文字
+                }else {
+                    millis = text;
+                }
+            }
+        });
+        mainPanel.add(millisTextField);
+
         nowButton.setBounds(360,130,90,20);
         nowButton.addActionListener(e -> {
             String nowTime = sdf.format(new Date());
@@ -158,7 +192,7 @@ public class Window extends JFrame {
         });
         mainPanel.add(nowButton);
 
-        startButton.setBounds(120,240,75,50);
+        startButton.setBounds(120,280,75,50);
         startButton.addActionListener(e -> {
             if (numPattern.matcher(num).matches()) {
                 int realNum = Integer.parseInt(num);
@@ -174,7 +208,7 @@ public class Window extends JFrame {
                             throw new RuntimeException(ex);
                         }
                         if (date.after(new Date())) {
-                            timeTask(time, realNum, false);
+                            timeTask(time, realNum, false,Long.parseLong(millis));
                             disabled(false);
                         } else {
                             JOptionPane.showMessageDialog(null, "执行时间不能在当前时间之前！", "错误", JOptionPane.ERROR_MESSAGE);
@@ -188,7 +222,7 @@ public class Window extends JFrame {
                         //拼接执行时间
                         time = format + " 00:00:00";
 
-                        timeTask(time, realNum, false);
+                        timeTask(time, realNum, false,Long.parseLong(millis));
                         disabled(false);
                     } else {
                         JOptionPane.showMessageDialog(null, "时间格式不正确！", "错误", JOptionPane.ERROR_MESSAGE);
@@ -200,14 +234,14 @@ public class Window extends JFrame {
         });
         mainPanel.add(startButton);
 
-        startNowButton.setBounds(240,240,150,50);
+        startNowButton.setBounds(240,280,150,50);
         startNowButton.addActionListener(e -> {
             if (numPattern.matcher(num).matches()) {
                 int realNum = Integer.parseInt(num);
                 if (realNum <= 0){
                     JOptionPane.showMessageDialog(null, "点击次数必填！", "错误", JOptionPane.ERROR_MESSAGE);
                 }else {
-                    timeTask(time, realNum,true);
+                    timeTask(time, realNum,true,Long.parseLong(millis));
                     disabled(true);
                 }
             }else {
@@ -218,7 +252,7 @@ public class Window extends JFrame {
 
         infoLabel4.setFont(new Font("PingFang SC", Font.BOLD, 16));
         infoLabel4.setForeground(Color.BLACK);
-        infoLabel4.setBounds(0, 300, 500, 38);
+        infoLabel4.setBounds(0, 350, 500, 38);
         infoLabel4.setOpaque(false);
         mainPanel.add(infoLabel4);
     }
@@ -255,13 +289,13 @@ public class Window extends JFrame {
      * @param time 时间
      * @param num 次数
      */
-    public void timeTask(String time ,int num,boolean now){
+    public void timeTask(String time ,int num,boolean now,long millis){
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
                 try {
-                    click(num);
+                    click(num,millis);
                     JOptionPane.showMessageDialog(null, "点击完毕!", "成功", JOptionPane.INFORMATION_MESSAGE);
                     timer.schedule(new TimerTask() {
                         @Override
@@ -301,13 +335,13 @@ public class Window extends JFrame {
      * @param num 点击数量
      * @throws Exception 异常信息
      */
-    public static void click(int num) throws Exception {
+    public static void click(int num,long millis) throws Exception {
         Robot robot = new Robot();
         while (num-- > 0) {
             System.out.println("点击剩余" + num + "次");
             robot.mousePress(MouseEvent.BUTTON1_DOWN_MASK);
             robot.mouseRelease(MouseEvent.BUTTON1_DOWN_MASK);
-            Thread.sleep(34);//QQ飞车 30 帧为 33.34 毫秒
+            Thread.sleep(millis);
         }
     }
 }
