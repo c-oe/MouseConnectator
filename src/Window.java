@@ -1,11 +1,9 @@
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -47,7 +45,7 @@ public class Window extends JFrame {
     JFormattedTextField dateTextField = new JFormattedTextField(exampleTime);//定时时间输入框
     JLabel numLabel = new JLabel("*连点次数：");
     JFormattedTextField numTextField = new JFormattedTextField("100");//次数输入框
-    JLabel millisLabel = new JLabel("间隔时间：");
+    JLabel millisLabel = new JLabel("间隔时间(ms)：");
     JFormattedTextField millisTextField = new JFormattedTextField(exampleMillis);//间隔时间输入框
     JButton nowButton = new JButton("当前时间");
     JButton startButton = new JButton("开始");
@@ -156,7 +154,7 @@ public class Window extends JFrame {
         mainPanel.add(numTextField);
 
         millisLabel.setFont(new Font("PingFang SC", Font.BOLD, 16));
-        millisLabel.setBounds(100, 220, 91, 38);
+        millisLabel.setBounds(70, 220, 120, 38);
         millisLabel.setOpaque(false);
         mainPanel.add(millisLabel);
 
